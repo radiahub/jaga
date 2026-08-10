@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html class="theme-dark">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="connect-src *; child-src * 'unsafe-inline'; default-src * 'unsafe-inline' 'unsafe-eval' blob: data:; img-src * blob: data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' blob: data:;">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202830" />
+
+  <style>
+    html, body {
+      touch-action: manipulation;
+    }
+  </style>
+  
+  <title>Jaga</title>
+
+  <link href="/import/material-icons/iconfont/material-icons.css" rel="stylesheet">
+
+  <script src="/import/jquery/jquery-3.4.1.min.js"></script>
+  <script src="/import/inputmask/inputmask.min.js"></script>
+  <script src="/import/inputmask/jquery.inputmask.min.js"></script>
+  <script src="/import/moment/moment.min.js"></script>
+  
+  <!--Preserve script declaration order-->
+  <link rel="stylesheet" href="/lib/css/colors.css">
+  <link rel="stylesheet" href="/lib/css/tokens.css">
+  <link rel="stylesheet" href="/lib/css/default.css">
+  <link rel="stylesheet" href="/lib/css/controls.css">
+  
+  <!--Comment for release-->
+  <link rel="stylesheet" href="/lib/css/E.css">
+  <script src="/lib/js/E.js"></script>
+  
+  <script>
+    const PACKAGE_ID = "org.radiahub.pwa.jaga";
+    const GATEWAY = window.location.origin + "/jaga/";
+    if (E) { 
+      E.log(GATEWAY); 
+    } 
+    else { 
+      console.log(GATEWAY); 
+    }
+  </script>
+
+  <!--Preserve script declaration order-->
+  <script src="/lib/js/arrays.js"></script>
+  <script src="/lib/js/lib.js"></script>
+  <script src="/lib/js/storage.js"></script>
+  <script src="/lib/js/strings.js"></script>
+  <script src="/lib/js/datetime.js"></script>
+  <script src="/lib/js/filesystem.js"></script>
+  <script src="/lib/js/run.js"></script>
+  <script src="/lib/js/events.js"></script>
+  <script src="/lib/js/globalization.js"></script>  
+  <script src="/lib/js/image.js"></script>  
+  <script src="/lib/js/DOM.js"></script>  
+  <script src="/lib/js/theme.js"></script>  
+  <script src="/lib/js/controls.js"></script>  
+  <script src="/lib/js/statesSPA.js"></script>
+  <script src="/lib/js/views.js"></script>
+  <!--
+  <script src="/lib/js/dialogs.js"></script>
+  -->
+  <script src="/lib/js/device.js"></script>
+  <script src="/lib/js/ipc.js"></script>
+  <script src="/lib/js/fcm.js"></script>
+  <script src="/lib/js/codescanner.js"></script>
+  <script src="/lib/js/camera.js"></script>
+  
+  <!--Preserve script declaration order-->
+  <script src="/jaga/js/home.js"></script>
+  
+  <style>
+    .rotation-warning {
+      display: none; 
+    }
+    @media screen and (orientation: landscape) {
+      .rotation-warning {
+        position:fixed;
+        top:0; left:0; right:0; bottom:0;
+        background: #000; color: #fff;
+        display:flex; align-items:center; justify-content:center;
+        z-index: 25000;
+      }
+    }
+  </style>
+  
+</head>
+<body style='height:100%;'>
+  
+    <div class="rotation-warning h3">
+        <p>This application is best viewed in Portrait mode</p>
+    </div>
+  
+    <div id="DIV_REQUEST_SIGNIN" class="page" style="background-color:var(--color-surface); color:var(--color-primary); display:none;">       
+        <div id="BTN_AUTH_GOOGLE" style="margin-top:var(--space-large); width:200px; height:60px;"></div>
+    </div>
+
+    <div id="DIV_REQUEST_NOTIFICATIONS" class="page" style="background-color:var(--color-surface); color:var(--color-primary); display:none;">       
+        <div style="margin-top:var(--space-large);">
+            <button id="BTN_ALLOW_NOTIFICATION">ALLOW NOTIFICATION</button>
+        </div>
+    </div>
+
+    <script type="module" src="/jaga/js/jaga.js"></script>
+  
+</body>
+</html>
