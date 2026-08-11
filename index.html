@@ -34,15 +34,16 @@
   <link rel="stylesheet" href="/lib/css/E.css">
   <script src="/lib/js/E.js"></script>
   
+  <!-- Must be declared before loading statesSPA.js (URL redeclaration) -->
   <script>
-    const PACKAGE_ID = "org.radiahub.pwa.jaga";
-    const GATEWAY = window.location.origin + "/jaga/";
-    if (E) { 
-      E.log(GATEWAY); 
-    } 
-    else { 
-      console.log(GATEWAY); 
-    }
+    const HREF = window.location.href;
+    const PACKAGE_ID = "org.radiahub.web.jaga";
+    const GATEWAY = window.location.origin + "/main/";
+    /*
+    console.log(HREF);
+    console.log(PACKAGE_ID);
+    console.log(GATEWAY); 
+    */
   </script>
 
   <!--Preserve script declaration order-->
@@ -61,6 +62,7 @@
   <script src="/lib/js/controls.js"></script>  
   <script src="/lib/js/statesSPA.js"></script>
   <script src="/lib/js/views.js"></script>
+  <script src="/lib/js/xdbref.js"></script>
   <!--
   <script src="/lib/js/dialogs.js"></script>
   -->
@@ -87,6 +89,9 @@
       }
     }
   </style>
+  
+  <!--Load Google auth API-->
+  <script src="https://accounts.google.com/gsi/client" async></script>
   
 </head>
 <body style='height:100%;'>
