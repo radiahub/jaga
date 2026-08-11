@@ -55,24 +55,6 @@ const manifest = {
         }
     ]
 };
-/*
-const manifest = {
-    "name"             : "Jaga pet condition reporting",
-    "short_name"       : "Jaga",
-    "theme_color"      : "#1288FD",
-    "background_color" : "#1288FD",
-    "display"          : "standalone",
-    "scope"            : "",
-    "start_url"        : "http://localhost:8080/jaga/",
-    "description"      : "radiahub jaga pet condition reporting",
-    "icons": [
-        {
-            "src"   : "https://radiahub.22web.org/jaga/jaga_512x512.png",
-            "sizes" : "512x512"
-        }
-    ]
-};
-*/
 
 // Convert JSON to base64 data URL
 const manifestString  = JSON.stringify(manifest);
@@ -101,7 +83,7 @@ const registerServiceWorker = function(){
         console.info("IN registerServiceWorker()");
         Notification.requestPermission().then((permission)=>{
             console.log(permission);
-            if (permission === "granted") {
+            if ((permission === "granted") || (permission === "default")) {
                 navigator.serviceWorker.register('/jaga/firebase-messaging-sw.js')
                 .then ((registration)=>{
                     console.log("Resolved by navigator.serviceWorker.register()");
@@ -229,11 +211,11 @@ const jaga = function() {
         try {
             jQuery(`#DIV_REQUEST_SIGNIN`).show();
             
-            const DEVELOPER_CLIENT_ID = '526889796130-49pfvkv87sjs4ktputdsr9bbat95jbfs.apps.googleusercontent.com';
+            const DEVELOPER_CLIENT_ID = '526889796130-7jm34btcio33q2d2t7o9li53fo6jlogd.apps.googleusercontent.com';
             
             const handleCredentialResponse = function(response) {
-              //fetch('https://radiahub.22web.org/auth-google.php', {
-                fetch('http://localhost:8080/auth-google.php', {
+              //fetch('http://localhost:8080/auth-google.php', {
+                fetch('https://radiahub.22web.org/auth-google.php', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json'
