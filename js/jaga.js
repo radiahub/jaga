@@ -37,6 +37,57 @@ const messaging = getMessaging(app);
 R.reg("/lib/html/strings.json");
 await theme.init();
 
+console.log("Registering stand alone app manifest");
+ 
+const manifest = {
+    "name"             : "radiahub.22web.org/jaga",
+    "short_name"       : "Jaga",
+    "theme_color"      : "#1288FD",
+    "background_color" : "#1288FD",
+    "display"          : "standalone",
+    "scope"            : "",
+    "start_url"        : "https://radiahub.22web.org/jaga/",
+    "description"      : "radiahub jaga",
+    "icons": [
+        {
+            "src"   : "https://radiahub.22web.org/jaga/jaga_512x512.png",
+            "sizes" : "512x512"
+        }
+    ]
+};
+/*
+const manifest = {
+    "name"             : "Jaga pet condition reporting",
+    "short_name"       : "Jaga",
+    "theme_color"      : "#1288FD",
+    "background_color" : "#1288FD",
+    "display"          : "standalone",
+    "scope"            : "",
+    "start_url"        : "http://localhost:8080/jaga/",
+    "description"      : "radiahub jaga pet condition reporting",
+    "icons": [
+        {
+            "src"   : "https://radiahub.22web.org/jaga/jaga_512x512.png",
+            "sizes" : "512x512"
+        }
+    ]
+};
+*/
+
+// Convert JSON to base64 data URL
+const manifestString  = JSON.stringify(manifest);
+const manifestBase64  = btoa(unescape(encodeURIComponent(manifestString)));
+const manifestDataUrl = "data:application/json;base64," + manifestBase64;
+
+// Inject into <head>
+const link = document.createElement("link");
+link.rel = "manifest";
+link.href = manifestDataUrl;
+document.head.appendChild(link);
+
+console.log("Stand alone app manifest registered");
+
+
 const launch = function() {
     jQuery(`DIV_REQUEST_NOTIFICATIONS`).hide();
     delay(100).then(()=>{
