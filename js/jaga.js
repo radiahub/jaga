@@ -38,8 +38,11 @@ R.reg("/lib/html/strings.json");
 await theme.init();
 
 const launch = function() {
-    open("home");
-    console.log("Application running normally");
+    jQuery(`DIV_REQUEST_NOTIFICATIONS`).hide();
+    delay(100).then(()=>{
+        open("home");
+        console.log("Application running normally");
+    });
 };
 
 const registerServiceWorker = function(){
@@ -96,6 +99,8 @@ const registerServiceWorker = function(){
 const load_firebase_messaging = function() {
     return new Promise((resolve)=>{
         
+        console.info(`IN load_firebase_messaging() Notification.permission='${String(Notification.permission)}'`);
+        
         if (Notification.permission === "granted") {
             registerServiceWorker().then((result)=>{
                 console.log(result);
@@ -108,8 +113,17 @@ const load_firebase_messaging = function() {
         }
         else {
             
-            jQuery(`DIV_REQUEST_NOTIFICATIONS`).show();
-            
+            jQuery(`#DIV_REQUEST_NOTIFICATIONS`).show();
+            jQuery(`#BTN_ALLOW_NOTIFICATION`).on("click", function(){
+                registerServiceWorker().then((result)=>{
+                    console.log(result);
+                    if (!result) {
+                      console.error("Rejected by registerServiceWorker()");
+                      //history.go(-1);
+                    }
+                    resolve(result);
+                });
+            });
             
         }
         
@@ -118,6 +132,7 @@ const load_firebase_messaging = function() {
 
 const saveUser = function(email, name, picture) {
     return new Promise((resolve)=>{
+        console.info(`IN saveUser() email='${email}' name='${name}' picture='${picture}'`);
         
         storage.set(`identifier`, email);
         storage.set(`google_name`, name);
@@ -127,12 +142,13 @@ const saveUser = function(email, name, picture) {
             displayName: name,
             pictureURI : picture
         };
-        
+        //console.log(row);
         const loc = {
             primaryEmail: email
         };
-        
+        //console.log(loc);
         xdbref.set("radiahub", "users", row, loc).then((result)=>{
+            //console.log(result);
             resolve(result);
         });
     });
@@ -140,34 +156,33 @@ const saveUser = function(email, name, picture) {
 
 const jaga = function() {
     
-    console.info(`IN jaga()`);
-    
     let identifier = storage.get(`identifier`);
-    
+    console.info(`IN jaga() identifier='${String(identifier)}'`);
+
     if (strlen(identifier) > 0) {
         
         load_firebase_messaging().then((res)=>{
             console.log(res);
-            jQuery(`DIV_REQUEST_NOTIFICATIONS`).hide();
             launch();
         });
         
     }
     else {
         
+        console.log(`identifer not known`);
         if (!google?.accounts?.id) {
-            alert("Google Identity Services library not loaded");
+            console.error("Google Identity Services library not loaded");
             return;
         }
         
         try {
-            jQuery(`DIV_REQUEST_SIGNIN`).show();
+            jQuery(`#DIV_REQUEST_SIGNIN`).show();
             
             const DEVELOPER_CLIENT_ID = '526889796130-49pfvkv87sjs4ktputdsr9bbat95jbfs.apps.googleusercontent.com';
             
             const handleCredentialResponse = function(response) {
-                //fetch('http://localhost:8080/auth-google.php', {
-                fetch('https://radiahub.22web.org/auth-google.php', {
+              //fetch('https://radiahub.22web.org/auth-google.php', {
+                fetch('http://localhost:8080/auth-google.php', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json'
@@ -181,11 +196,10 @@ const jaga = function() {
                         data = JSON.parse(data);
                     }
                     saveUser(data.email, data.name, data.picture).then((res)=>{
-                        console.log(res);
+                        //console.log(res);
                         jQuery(`DIV_REQUEST_SIGNIN`).hide();
                         load_firebase_messaging().then((res)=>{
-                            console.log(res);
-                            jQuery(`DIV_REQUEST_NOTIFICATIONS`).hide();
+                            //console.log(res);
                             launch();
                         });
                     });
