@@ -42,12 +42,12 @@ console.log("Registering stand alone app manifest");
 const manifest = {
     "name"             : "radiahub.22web.org/jaga",
     "short_name"       : "Jaga",
-    "theme_color"      : "#1288FD",
-    "background_color" : "#1288FD",
+    "theme_color"      : "#1289FD",
+    "background_color" : "#1289FD",
     "display"          : "standalone",
     "scope"            : "",
     "start_url"        : "https://radiahub.22web.org/jaga/",
-    "description"      : "radiahub jaga",
+    "description"      : "radiahub Jaga",
     "icons": [
         {
             "src"   : "https://radiahub.22web.org/jaga/jaga_512x512.png",
@@ -70,13 +70,144 @@ document.head.appendChild(link);
 console.log("Stand alone app manifest registered");
 
 
-const launch = function() {
+const jaga_connect = function () {
+    return new Promise((resolve)=>{
+        
+        console.info(`IN jaga_connect()`);
+        
+        let in_offline_retry = false;
+        
+        const iterate = function() {
+            connected().then((result)=>{
+                
+                console.log(`connected=${result}`);
+                
+                in_offline_retry = false;
+                if (result) {
+                    if (jQuery(`#DIV_REQUEST_ONLINE`).is(":visible")) {
+                        jQuery(`#DIV_REQUEST_ONLINE`).hide();
+                    }
+                    resolve(true);
+                }
+                else {
+                    if (!jQuery(`#DIV_REQUEST_ONLINE`).is(":visible")) {
+                        jQuery(`#DIV_REQUEST_ONLINE`).show();
+                    };
+                    jQuery(`#BTN_OFFLINE_RETRY`).off("click").on("click", function() {
+                        if (in_offline_retry) {
+                            return;
+                        }
+                        ripple(`BTN_OFFLINE_RETRY`, function() {
+                            in_offline_retry = true;
+                            iterate();
+                        });
+                    });
+                }
+            });
+        };
+    
+        iterate();
+    
+    });
+}
+
+
+const launch = function () {
     jQuery(`DIV_REQUEST_NOTIFICATIONS`).hide();
     delay(100).then(()=>{
         open("home");
         console.log("Application running normally");
     });
 };
+
+
+const jaga_init_geolocation_permission = function () {
+    return new Promise((resolve)=>{
+        
+        if (!"geolocation" in navigator) {
+            console.error("Geolocation is not supported by your browser.");
+            resolve(false);
+        }
+        else {
+            jQuery(`#DIV_REQUEST_LOCATION`).show();
+            jQuery(`#BTN_ALLOW_LOCATION`).off('click').on('click', function(){
+                
+                // Define optional configuration
+                const options = {
+                    enableHighAccuracy: true, // Uses GPS if available
+                    timeout: 10000,           // Wait max 10 seconds
+                    maximumAge: 0             // Do not use a cached location
+                };
+                
+                // Request location to force browser location permission dialog
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // Success Callback
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        console.log(`Latitude: ${lat}, Longitude: ${lng}`);
+                        resolve(true);
+                    },
+                    (error) => {
+                        // Error Callback
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED: {
+                                console.error("User denied geolocation request");
+                                resolve(false);
+                                break;
+                            }
+                            case error.POSITION_UNAVAILABLE:{
+                                console.error("Location information is unavailable");
+                                resolve(false);
+                                break;
+                            }
+                            case error.TIMEOUT: {
+                                console.error("Location request timed out");
+                                resolve(false);
+                                break;
+                            }
+                            default: {
+                              console.error("Unknown error");
+                            }
+                        }
+                    },
+                    options
+                );
+                
+            });
+        }
+    });
+};
+
+
+const jaga_get_geolocation_permission = function () {
+    return new Promise((resolve)=>{
+        if (!"geolocation" in navigator) {
+            console.error("Geolocation not supported");
+            resolve(false);
+        }
+        else {
+            navigator.permissions.query({ name: 'geolocation' }).then((result)=>{
+                if (result.state === 'granted') {
+                    // Location will be fetched immediately without a prompt
+                    resolve(true);
+                } 
+                else if (result.state === 'prompt') {
+                    // The browser will show the permission popup to the user
+                    jaga_init_geolocation_permission().then((result)=>{
+                        console.log(result);
+                        resolve(true);
+                    });
+                }
+                else if (result.state === 'denied') {
+                    // Access is blocked; calling geolocation will fail silently or throw an error
+                    resolve(false);
+                }
+            });
+        }
+    });
+};
+
 
 const registerServiceWorker = function(){
     return new Promise((resolve)=>{
@@ -87,6 +218,12 @@ const registerServiceWorker = function(){
                 navigator.serviceWorker.register('/jaga/firebase-messaging-sw.js')
                 .then ((registration)=>{
                     console.log("Resolved by navigator.serviceWorker.register()");
+                    
+                    // Comment for production
+                    //
+                    registration.update();
+                    console.log("Service worker updated");
+                    
                     delay(100).then(()=>{
                         getToken(messaging, { serviceWorkerRegistration:registration, vapidKey:firebaseVapidKey })
                         .then((currentToken)=>{
@@ -129,6 +266,7 @@ const registerServiceWorker = function(){
     });
 };
 
+
 const load_firebase_messaging = function() {
     return new Promise((resolve)=>{
         
@@ -163,9 +301,10 @@ const load_firebase_messaging = function() {
     });
 };
 
-const saveUser = function(email, name, picture) {
+
+const registerUser = function(email, name, picture) {
     return new Promise((resolve)=>{
-        console.info(`IN saveUser() email='${email}' name='${name}' picture='${picture}'`);
+        console.info(`IN registerUser() email='${email}' name='${name}' picture='${picture}'`);
         
         storage.set(`identifier`, email);
         storage.set(`google_name`, name);
@@ -187,16 +326,20 @@ const saveUser = function(email, name, picture) {
     });
 };
 
+
 const jaga = function() {
     
     let identifier = storage.get(`identifier`);
     console.info(`IN jaga() identifier='${String(identifier)}'`);
 
     if (strlen(identifier) > 0) {
-        
+                           
         load_firebase_messaging().then((res)=>{
             console.log(res);
-            launch();
+            jaga_get_geolocation_permission().then((result)=>{
+                console.log(`jaga_get_geolocation_permission() returned ${result}`);
+                launch();
+            });
         });
         
     }
@@ -228,12 +371,15 @@ const jaga = function() {
                     if (is_json(data)) {
                         data = JSON.parse(data);
                     }
-                    saveUser(data.email, data.name, data.picture).then((res)=>{
+                    registerUser(data.email, data.name, data.picture).then((res)=>{
                         //console.log(res);
                         jQuery(`DIV_REQUEST_SIGNIN`).hide();
                         load_firebase_messaging().then((res)=>{
                             //console.log(res);
-                            launch();
+                            jaga_get_geolocation_permission().then((result)=>{
+                                console.log(`jaga_get_geolocation_permission() returned ${result}`);
+                                launch();
+                            });
                         });
                     });
                 })
@@ -252,14 +398,22 @@ const jaga = function() {
         
         google.accounts.id.renderButton(
             document.getElementById("BTN_AUTH_GOOGLE"),
-            { theme: "outline", size: "large" }
+            { theme: "outline", size: "large", theme: "dark" }
         );
         
     }
 };
 
-
-jaga();
+jaga_connect().then((result)=>{
+    if (result) {
+        console.log(`resolved by jaga_connect()`);
+        jaga();
+    }
+    else {
+        console.error(`rejected by jaga_connect()`);
+        mobileExit();
+    }
+});
 
 
 // End of file: jaga.js
