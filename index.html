@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html class="theme-dark">
 <head>
-  <meta http-equiv="Content-Security-Policy" content="connect-src *; child-src * 'unsafe-inline'; default-src * 'unsafe-inline' 'unsafe-eval' blob: data:; img-src * blob: data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' blob: data:;">
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#202830" />
+    <meta http-equiv="Content-Security-Policy"
+        content="
+        default-src * 'unsafe-inline' 'unsafe-eval' blob: data:;
+        worker-src blob:;
+        img-src * blob: data:;
+        style-src * 'unsafe-inline';
+        script-src * 'unsafe-inline' 'unsafe-eval' blob: data:;
+        connect-src *;"
+    >
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#202830" />
 
   <style>
     html, body {
@@ -27,6 +35,9 @@
   <!--Preserve script declaration order-->
   <link rel="stylesheet" href="/lib/css/colors.css">
   <link rel="stylesheet" href="/lib/css/tokens.css">
+  
+  <link rel="stylesheet" href="/jaga/css/jaga-default.css">
+  
   <link rel="stylesheet" href="/lib/css/default.css">
   <link rel="stylesheet" href="/lib/css/controls.css">
   
@@ -36,16 +47,26 @@
   
   <!-- Must be declared before loading statesSPA.js (URL redeclaration) -->
   <script>
-    const HREF = window.location.href;
-    const PACKAGE_ID = "org.radiahub.web.jaga";
-    const GATEWAY = window.location.origin + "/main/";
-    /*
-    console.log(HREF);
-    console.log(PACKAGE_ID);
-    console.log(GATEWAY); 
-    */
+
+      const PACKAGE_ID = "org.radiahub.web.jaga";
+      
+      const HREF = window.location.href;
+      const GATEWAY = window.location.origin + "/jaga/";
+
+      const params = new URL(HREF).searchParams;
+      //console.log(params);
+      const HREF_MESSAGE_ID = params.has('msg') ? params.get('msg') : '';
+      E.write("log", [`HREF_MESSAGE_ID='${HREF_MESSAGE_ID}'`]);
+
   </script>
 
+  <!--Load Mapbox-->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.css" rel="stylesheet" />
+  <script>
+      E.write("log", ["Mapbox loaded"]);
+  </script>
+  
   <!--Preserve script declaration order-->
   <script src="/lib/js/arrays.js"></script>
   <script src="/lib/js/lib.js"></script>
@@ -71,6 +92,7 @@
   <script src="/lib/js/fcm.js"></script>
   <script src="/lib/js/codescanner.js"></script>
   <script src="/lib/js/camera.js"></script>
+  <script src="/lib/js/geocoding.js"></script>
   
   <!--Preserve script declaration order-->
   <script src="/jaga/js/home.js"></script>
@@ -95,9 +117,28 @@
   
 </head>
 <body style='height:100%;'>
-  
+    <!--
     <div class="rotation-warning h3">
         <p>This application is best viewed in Portrait mode</p>
+    </div>
+    -->
+    <div id="DIV_REQUEST_ONLINE" class="page" style="background-color:#1289FD; color:#EAEAEA; padding:var(--space-large); display:none;">
+        <div style="display:flex; height:8rem;">
+          <div style="flex-shrink:0;">
+              <img src="/jaga/jaga_256x256.png" style="width:8rem;"/>
+          </div>
+          <div class="" style="padding:1.05rem 0.75rem; flex-grow:1;">
+              <div class="fit-width" style="font-size:1.5rem; font-weight:500;">
+                  You are offline
+              </div>
+              <div class="fit-width" style="font-size:1.1rem; margin-top:0.5rem;">
+                  Please check your Internet connection
+              </div>              
+          </div>
+        </div>        
+        <div style="margin-top:0.5rem; padding-left:8.75rem">
+            <div id="BTN_OFFLINE_RETRY" class="button" style="background-color:#202020; border:none; border-radius:var(--radius-small); color:#F0F0F0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">RETRY</div>
+        </div>                
     </div>
   
     <div id="DIV_REQUEST_SIGNIN" class="page" style="background-color:var(--color-surface); color:var(--color-primary); display:none;">       
@@ -107,6 +148,12 @@
     <div id="DIV_REQUEST_NOTIFICATIONS" class="page" style="background-color:var(--color-surface); color:var(--color-primary); display:none;">       
         <div style="margin-top:var(--space-large);">
             <button id="BTN_ALLOW_NOTIFICATION">ALLOW NOTIFICATION</button>
+        </div>
+    </div>
+
+    <div id="DIV_REQUEST_LOCATION" class="page" style="background-color:var(--color-surface); color:var(--color-primary); display:none;">       
+        <div style="margin-top:var(--space-large);">
+            <button id="BTN_ALLOW_LOCATION">ALLOW GEOLOCATION</button>
         </div>
     </div>
 
